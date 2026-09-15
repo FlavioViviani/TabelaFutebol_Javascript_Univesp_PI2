@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=devide-width, initial-scale=1.0">
+    <title>Estatísticas do Futebol de Segunda</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="container">
+        <h1> Estatísticas do Futebol de Segunda</h1>
+
+        <div class="painel-admin">
+            <h2> Cadastrar Nova Rodada</h2>
+            <form id="form-rodada">
+                <div class="form-linha">
+                    <div class="form-grupo">
+                        <label for="data-jogo">Data do Jogo:</label>
+                        <input type="date" id="data-jogo" required>
+                    </div>
+
+                    <div class="form-grupo">
+                        <label for="campeao">Time Campeão:</label>
+                        <select id="campeao" required>
+                            <option value="Azul">Azul</option>
+                            <option value="Vermelho">Vermelho</option>
+                            <option value="Preto">Preto</option>
+                        </select>
+                    </div>
+                </div>
+            
+            <div class="form-grupo">
+                <label for="dados-brutos">Desempenho Indivídual:</label>
+                <small>Formato: Nome, Time, Gols, Assistências (Uma linha por jogador)</small>
+                <textarea id="dados-brutos" rows="5" placeholder="Ex:&#10;João, Azul, 2, 1&#10;Flavio, Vermelho, 1, 0" required></textarea>
+            </div>
+
+            <button type="submit" class="btn-salvar">Salvar Rodada</button>
+            </form>
+        </div>
+
+        <div class="contatiner">
+            <h2>Classificação Geral</h2>
+
+            <!--Estrutura da tabela-->
+            <table id="tabela-ranking">
+                <thead>
+                    <tr>
+                        <th>Atleta</th>
+                        <th>Títulos</th>
+                        <th>Gols</th>
+                        <th>Assistências</th>
+                        <th>Jogos</th>
+                        <th>M.P.G</th>
+                    </tr>
+                </thead>
+                <!--Destino dos dados inseridos-->
+                <tbody id="corpo-tabela">
+
+                </tbody>
+            </table>
+        </div>
+
+        <script src="script.js"></script>
+</body>
+</html>
