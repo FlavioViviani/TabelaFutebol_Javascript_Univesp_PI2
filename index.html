@@ -5,63 +5,121 @@
     <meta name="viewport" content="width=devide-width, initial-scale=1.0">
     <title>Estatísticas do Futebol de Segunda</title>
     <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script> <!-- Framework Vue.js -->
 </head>
 <body>
 
-    <div class="container">
+    <div id="app" class="container">
         <h1> Estatísticas do Futebol de Segunda</h1>
 
-        <div class="painel-admin">
-            <h2> Cadastrar Nova Rodada</h2>
-            <form id="form-rodada">
+        <div class="painel-admin">      <!-- Painel admin cadastro de nova rodada -->
+            <h2>Cadastrar Nova Rodada</h2>
+            <form @submit.prevent="salvarRodada">
                 <div class="form-linha">
                     <div class="form-grupo">
-                        <label for="data-jogo">Data do Jogo:</label>
-                        <input type="date" id="data-jogo" required>
+                        <label>Data do Jogo:</label>
+                        <input type="date" v-model="form.data" required>
                     </div>
 
                     <div class="form-grupo">
-                        <label for="campeao">Time Campeão:</label>
-                        <select id="campeao" required>
+                        <label>Time Campeão:</label>
+                        <select v-model="form.campeao" required>
                             <option value="Azul">Azul</option>
                             <option value="Vermelho">Vermelho</option>
                             <option value="Preto">Preto</option>
                         </select>
                     </div>
                 </div>
-            
-            <div class="form-grupo">
-                <label for="dados-brutos">Desempenho Indivídual:</label>
-                <small>Formato: Nome, Time, Gols, Assistências (Uma linha por jogador)</small>
-                <textarea id="dados-brutos" rows="5" placeholder="Ex:&#10;João, Azul, 2, 1&#10;Flavio, Vermelho, 1, 0" required></textarea>
-            </div>
 
-            <button type="submit" class="btn-salvar">Salvar Rodada</button>
+                <div class="form-grupo">
+                    <label>Desempenho Individual</label>
+                    <small>Formato: Nome, Time, Gols, Assistências</small>
+                    <textarea v-model="form.dadosBrutos" rows="5" placeholder="Ex:&#10;João, Azul, 2, 1" required></textarea>
+                </div>
+
+                <button type="submit" class="btn-salvar">Salvar Rodada</button>
             </form>
         </div>
 
-        <div class="contatiner">
-            <h2>Classificação Geral</h2>
+    <h2>Classificação Geral</h2>        <!-- Tabela principal -->
+    <table>
+        <thead>
+            <tr>
+                <th>Atleta</th>
+                <th>Títulos</th>
+                <th>Gols</th>
+                <th>Assistências</th>
+                <th>Jogos</th>
+                <th>M.P.G</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr v-for="jogador in rankingCalculado" :key="jogador.nome">        <!-- v-for cria linha para cada jogador -->
+                <td><strong>{{ jogador.nome }}</strong></td>
+                <td>{{ jogador.titulos }}</td>
+                <td>{{ jogador.gols }}</td>
+                <td>{{ jogador.assistencias }}</td>
+                <td>{{ jogador.jogos }}</td>
+                <td>{{ jogador.mpg }}</td>
+            </tr>
+        </tbody>
+    </table>
 
-            <!--Estrutura da tabela-->
-            <table id="tabela-ranking">
+    <hr>
+    <div class="painel-detalhes">       <!-- Painel do jogador-->
+        <h2>Detalhes do Jogador</h2>
+        <div class="form-grupo">
+            <label>Filtrar Atleta:</label>
+            <select v-model="jogadorSelecionado">
+                <option value="">Escolha um jogador...</option>
+                <option v-for="nome in nomesUnicos" :key="nome" :value="nome">{{ nome }}</option>
+            </select>
+        </div>
+
+        <div v-if="jogadorSelecionado">
+            <div class="cards-metricas" v-if="dadosDoJogador">
+                <div class="card">
+                    <h3>Gols</h3>
+                    <p>{{ dadosDoJogador.gols }}</p>
+                </div>
+                <div class="card">
+                    <h3>Assistências</h3>
+                    <p>{{ dadosDoJogador.assistencias }}</p>
+                </div>
+                <div class="card">
+                    <h3>Jogos</h3>
+                    <p>{{ dadosDoJogador.jogos }}</p>
+                </div>
+                <div class="card">
+                    <h3>Títulos</h3>
+                    <p>{{ dadosDoJogador.titulos }}</p>
+                </div>
+            </div>
+
+            <h3>Histórico de Partidas</h3>
+            <table>
                 <thead>
                     <tr>
-                        <th>Atleta</th>
-                        <th>Títulos</th>
+                        <th>Data</th>
+                        <th>Time</th>
                         <th>Gols</th>
                         <th>Assistências</th>
-                        <th>Jogos</th>
-                        <th>M.P.G</th>
+                        <th>Resultado</th>
                     </tr>
                 </thead>
-                <!--Destino dos dados inseridos-->
-                <tbody id="corpo-tabela">
-
+                <tbody>
+                    <tr v-for="stat in historicoJogador" :key="stat.partida_id">
+                        <td>{{ stat.data_formatada }}</td>
+                        <td>{{ stat.time }}</td>
+                        <td>{{ stat.gols }}</td>
+                        <td>{{ stat.assistencias }}</td>
+                        <td>{{ stat.ganhou ? 'Campeão' : '-' }}</td>
+                    </tr>
                 </tbody>
             </table>
         </div>
-
-        <script src="script.js"></script>
+    </div>
+    
+    <script src="script.js"></script>
 </body>
 </html>
