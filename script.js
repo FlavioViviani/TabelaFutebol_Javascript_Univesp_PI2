@@ -80,6 +80,47 @@ createApp({
             }).sort((a,b) => b.partida_id - a.partida_id);
         });
 
+        const entrosamentos = computed(() => {
+            if (!jogadorSelecionado.value) return [];
+
+            const jogosDoAtleta = statsDB.value.filter(s => s.jogador === jogadorSelecionado.value);
+            let parceiros = {};
+
+            jogosDoAtleta.forEach(jogoAtleta => {
+                let partida = partidasDB.value.find(p => p.id === jogoAtleta.partida_id);
+                let ganhou = partida && partida.campeao.toLowerCase() === jogoAtleta.time.toLowerCase();
+
+                let companheiros = statsDB.value.filter(s =>
+                    s.partida_id === jogoAtleta.partida_id &&
+                    s.time.toLowerCase() === jogoAtleta.time.toLowerCase() &&
+                    s.jogador !== jogadorSelecionado.value
+                );
+
+                companheiros.forEach(comp => {
+                    if (!parceiros[comp.jogador]) {
+                        parceiros[comp.jogador] = {nome: comp.jogador, jogos_juntos: 0, titulos_juntos: 0 };
+                    }
+                    parceiros[comp.jogador].jogos_juntos += 1;
+                    if (ganhou) {
+                        parceiros[comp.jogador].titulos_juntos += 1;
+                    }
+                });
+            });
+
+            let lista = Object.values(parceiros);
+
+            lista.sort((a, b) => {
+                if (b.titulos_juntos !== a.titulos_juntos) return b.titulos_juntos - a.titulos_juntos;
+                return b.jogos_juntos - a.jogos_juntos;
+            });
+
+            return lista;
+        });
+
+        const historicoGeralPartidas = computed(() => {
+            return [...partidasDB.value].sort((a, b) => b.id - a.id);
+        });
+
         const salvarRodada = () => {
             let novoIdPartida = partidasDB.value.length > 0 ? partidasDB.value[partidasDB.value.length - 1].id + 1 : 1;
             const linhas = form.value.dadosBrutos.split('\n');
@@ -127,6 +168,8 @@ createApp({
                 nomesUnicos,
                 dadosDoJogador,
                 historicoJogador,
+                entrosamentos,
+                historicoGeralPartidas,
                 salvarRodada
             };
         }

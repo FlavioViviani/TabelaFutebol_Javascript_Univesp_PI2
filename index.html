@@ -117,8 +117,46 @@
                     </tr>
                 </tbody>
             </table>
+
+            <h3 style="margin-top: 30px;">Melhores Entrosamentos</h3>
+            <p v-if="entrosamentos.length === 0">Nenhum parceiro ainda.</p>
+            <table v-else>
+                <thead>
+                    <tr>
+                        <th>Parceiros</th>
+                        <th>Jogos Juntos</th>
+                        <th>Títulos Juntos</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="parceiro in entrosamentos" :key="parceiro.nome">
+                        <td>{{ parceiro.nome }}</td>
+                        <td>{{ parceiro.jogos_juntos }}</td>
+                        <td>{{ parceiro.titulos_juntos }}</td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
     </div>
+
+    <hr>
+    <h2>Histórico Geral de Partidas</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Data</th>
+                <th>Time Campeão</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr v-for="partida in historicoGeralPartidas" :key="partida.id">
+                <td>#{{ partida.id }}</td>
+                <td>{{ partida.data }}</td>
+                <td><strong>{{ partida.campeao }}</strong></td>
+            </tr>
+        </tbody>
+    </table>
     
     <script src="script.js"></script>
 </body>
