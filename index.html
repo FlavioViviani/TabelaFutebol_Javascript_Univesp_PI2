@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=devide-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Estatísticas do Futebol de Segunda</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script> <!-- Framework Vue.js -->
@@ -13,8 +13,9 @@
         <h1> Estatísticas do Futebol de Segunda</h1>
 
         <div class="painel-admin">      <!-- Painel admin cadastro de nova rodada -->
-            <h2>Cadastrar Nova Rodada</h2>
+            <h2>{{ form.id ? '✏️ Editar Rodada #' + form.id: '📝 Cadastrar Rodada'}}</h2>
             <form @submit.prevent="salvarRodada">
+
                 <div class="form-linha">
                     <div class="form-grupo">
                         <label>Data do Jogo:</label>
@@ -31,13 +32,27 @@
                     </div>
                 </div>
 
+                <div class="form-linha">
+                    <div class="form-grupo"><label>Pontos Azul:</label><input type="number" v-model="form.pontos_azul" min="0"></div>
+                    <div class="form-grupo"><label>Pontos Vermelho:</label><input type="number" v-model="form.pontos_vermelho" min="0"></div>
+                    <div class="form-grupo"><label>Pontos Preto:</label><input type="number" v-model="form.pontos_preto" min="0"></div>
+                </div>
+
                 <div class="form-grupo">
                     <label>Desempenho Individual</label>
                     <small>Formato: Nome, Time, Gols, Assistências</small>
-                    <textarea v-model="form.dadosBrutos" rows="5" placeholder="Ex:&#10;João, Azul, 2, 1" required></textarea>
+                    <textarea v-model="form.dadosBrutos" rows="5" placeholder="Ex: João, Azul, 2, 1" required></textarea>
                 </div>
 
-                <button type="submit" class="btn-salvar">Salvar Rodada</button>
+                <div class="form-grupo senha-grupo">
+                    <label> Senha Admin:</label>
+                    <input type="password" v-model="form.senha" placeholder="Obrigatório para salvar" required>
+                </div>
+
+                <div style="display: flex; gap: 10px; margin-top: 15px">
+                    <button type="submit" class="btn-salvar">{{ form.id ? 'Atualizar Rodada' : 'Salvar Rodada' }}</button>
+                    <button type="button" class="btn-cancelar" v-if="form.id" @click="cancelarEdicao">Cancelar Edição</button>
+                </div>
             </form>
         </div>
 
@@ -45,25 +60,32 @@
     <table>
         <thead>
             <tr>
-                <th>Atleta</th>
-                <th>Títulos</th>
-                <th>Gols</th>
-                <th>Assistências</th>
-                <th>Jogos</th>
-                <th>M.P.G</th>
+                <th @click="ordenar('ranking', 'posicao')">Pos</th>
+                <th @click="ordenar('ranking', 'nome')">Atleta</th>
+                <th @click="ordenar('ranking', 'titulos')">Títulos</th>
+                <th @click="ordenar('ranking', 'gols')">Gols</th>
+                <th @click="ordenar('ranking', 'assistencias')">Assistências</th>
+                <th @click="ordenar('ranking', 'jogos')">Jogos</th>
+                <th @click="ordenar('ranking', 'mpg')">M.P.G</th>
             </tr>
         </thead>
         <tbody>
-            <tr v-for="jogador in rankingCalculado" :key="jogador.nome">        <!-- v-for cria linha para cada jogador -->
-                <td><strong>{{ jogador.nome }}</strong></td>
-                <td>{{ jogador.titulos }}</td>
-                <td>{{ jogador.gols }}</td>
-                <td>{{ jogador.assistencias }}</td>
-                <td>{{ jogador.jogos }}</td>
-                <td>{{ jogador.mpg }}</td>
+            <tr v-for="jogador in rankingPaginado" :key="jogador.nome">        <!-- v-for cria linha para cada jogador -->
+                <td><strong>{{ jogador.posicao }}º</strong></td>
+                <td>{{ jogador?.nome }}</td>
+                <td>{{ jogador?.titulos }}</td>
+                <td>{{ jogador?.gols }}</td>
+                <td>{{ jogador?.assistencias }}</td>
+                <td>{{ jogador?.jogos }}</td>
+                <td>{{ jogador?.mpg }}</td>
             </tr>
         </tbody>
     </table>
+    <div class="paginacao">
+        <button @click="mudarPagina('ranking', -1)" :disabled="tableStates.ranking.page === 1">Anterior</button>
+        <span>Pág {{ tableStates.ranking.page }}</span>
+        <button @click="mudarPagina('ranking', 1)" :disabled="tableStates.ranking.page >= totalPages('ranking')">Próxima</button>
+    </div>
 
     <hr>
     <div class="painel-detalhes">       <!-- Painel do jogador-->
@@ -100,42 +122,53 @@
             <table>
                 <thead>
                     <tr>
-                        <th>Data</th>
-                        <th>Time</th>
-                        <th>Gols</th>
-                        <th>Assistências</th>
-                        <th>Resultado</th>
+                        <th @click="ordenar('histInd', 'partida_id')">Partida</th>
+                        <th @click="ordenar('histInd', 'data_formatada')">Data</th>
+                        <th @click="ordenar('histInd', 'time')">Time</th>
+                        <th @click="ordenar('histInd', 'gols')">Gols</th>
+                        <th @click="ordenar('histInd', 'assistencias')">Assistências</th>
+                        <th @click="ordenar('histInd', 'ganhou')">Resultado</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr v-for="stat in historicoJogador" :key="stat.partida_id">
-                        <td>{{ stat.data_formatada }}</td>
-                        <td>{{ stat.time }}</td>
-                        <td>{{ stat.gols }}</td>
-                        <td>{{ stat.assistencias }}</td>
-                        <td>{{ stat.ganhou ? 'Campeão' : '-' }}</td>
+                    <tr v-for="stat in histIndPaginado" :key="stat.partida_id">
+                        <td>#{{ stat?.partida_id }}</td>
+                        <td>{{ stat?.data_formatada }}</td>
+                        <td>{{ stat?.time }}</td>
+                        <td>{{ stat?.gols }}</td>
+                        <td>{{ stat?.assistencias }}</td>
+                        <td>{{ stat?.ganhou ? '🏆 Campeão' : '-' }}</td>
                     </tr>
                 </tbody>
             </table>
+            <div class="paginacao">
+                    <button @click="mudarPagina('histInd', -1)" :disabled="tableStates.histInd.page === 1">Anterior</button>
+                    <span>Pág {{ tableStates.histInd.page }}</span>
+                    <button @click="mudarPagina('histInd', 1)" :disabled="tableStates.histInd.page >= totalPages('histInd')">Próxima</button>
+            </div>
 
             <h3 style="margin-top: 30px;">Melhores Entrosamentos</h3>
-            <p v-if="entrosamentos.length === 0">Nenhum parceiro ainda.</p>
-            <table v-else>
+            <table>
                 <thead>
                     <tr>
-                        <th>Parceiros</th>
-                        <th>Jogos Juntos</th>
-                        <th>Títulos Juntos</th>
+                        <th @click="ordenar('entrosamentos', 'nome')">Parceiros</th>
+                        <th @click="ordenar('entrosamentos', 'jogos_juntos')">Jogos Juntos</th>
+                        <th @click="ordenar('entrosamentos', 'titulos_juntos')">Títulos Juntos</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr v-for="parceiro in entrosamentos" :key="parceiro.nome">
-                        <td>{{ parceiro.nome }}</td>
-                        <td>{{ parceiro.jogos_juntos }}</td>
-                        <td>{{ parceiro.titulos_juntos }}</td>
+                    <tr v-for="parceiro in entrosamentosPaginado" :key="parceiro.nome">
+                        <td>{{ parceiro?.nome }}</td>
+                        <td>{{ parceiro?.jogos_juntos }}</td>
+                        <td>{{ parceiro?.titulos_juntos }}</td>
                     </tr>
                 </tbody>
             </table>
+            <div class="paginacao">
+                    <button @click="mudarPagina('entrosamentos', -1)" :disabled="tableStates.entrosamentos.page === 1">Anterior</button>
+                    <span>Pág {{ tableStates.entrosamentos.page }}</span>
+                    <button @click="mudarPagina('entrosamentos', 1)" :disabled="tableStates.entrosamentos.page >= totalPages('entrosamentos')">Próxima</button>
+            </div>
         </div>
     </div>
 
@@ -147,16 +180,29 @@
                 <th>ID</th>
                 <th>Data</th>
                 <th>Time Campeão</th>
+                <th>Placar (A-V-P)</th>
+                <th>Ações</th>
             </tr>
         </thead>
         <tbody>
-            <tr v-for="partida in historicoGeralPartidas" :key="partida.id">
-                <td>#{{ partida.id }}</td>
-                <td>{{ partida.data }}</td>
-                <td><strong>{{ partida.campeao }}</strong></td>
+            <tr v-for="partida in historicoGeralPaginado" :key="partida.id">
+                <td>#{{ partida?.id }}</td>
+                <td>{{ partida?.data }}</td>
+                <td><strong>{{ partida?.campeao }}</strong></td>
+                <td>{{ partida?.pontos_azul }} - {{ partida?.pontos_vermelho }} - {{ partida?.pontos_preto }}</td>
+                <td>
+                    <button class="acoes-btn btn-editar" @click ="editarRodada(partida)">✏️ Editar</button>
+                    <button class="acoes-btn btn-excluir" @click ="deletarRodada(partida.id)">🗑️ Excluir</button>
+                </td>
             </tr>
         </tbody>
     </table>
+    <div class="paginacao">
+            <button @click="mudarPagina('histGeral', -1)" :disabled="tableStates.histGeral.page === 1">Anterior</button>
+            <span>Pág {{ tableStates.histGeral.page }}</span>
+            <button @click="mudarPagina('histGeral', 1)" :disabled="tableStates.histGeral.page >= totalPages('histGeral')">Próxima</button>
+    </div>
+    </div>
     
     <script src="script.js"></script>
 </body>

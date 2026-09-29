@@ -111,3 +111,46 @@ input, select, textarea {
 .btn-salvar:hover {
     background-color: #2ecc71;
 }
+
+th {
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.2s;
+}
+th:hover {
+    background-color: #f1f5f9;
+}
+
+.paginacao {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    margin-top: 15px;
+    margin-bottom: 30px;
+}
+.paginacao button {
+    padding: 6px 12px;
+    background-color: #2563eb;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+.paginacao button:disabled {
+    background-color: #cbd5e1;
+    cursor: not-allowed;
+}
+
+.acoes-btn {
+    padding: 6px 10px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    margin: 0 4px;
+}
+.btn-editar {background: #eab308; color: black;}
+.btn-excluir {background: #ef4444; color: white;}
+.btn-cancelar {background: #64748b; color: white; border: none; padding: 10px; border-radius: 5px; cursor: pointer;}
+.senha-grupo input {border: 2px solid #ef4444;}
