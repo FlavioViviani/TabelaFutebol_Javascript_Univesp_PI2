@@ -6,7 +6,10 @@ createApp({
         const statsDB = ref([]);
         const jogadorSelecionado = ref('');
 
-        const urlAPI = 'https://bjh0zf3x-3000.brs.devtunnels.ms/api';
+        const darkMode = ref(false);
+        const mostrarAdmin = ref(false);
+
+        const urlAPI = 'https://api-futebol-segunda-univesp.onrender.com';
 
         const form=ref({
             id: null,
@@ -25,6 +28,10 @@ createApp({
             entrosamentos: { sortKey: 'titulos_juntos', sortOrder: 'desc', page: 1, limit: 5},
             histGeral: { sortKey: 'id', sortOrder: 'desc', page: 1, limit: 5}
         });
+
+        const alternarTema = () => {
+            darkMode.value = !darkMode.value;
+        };
 
         const carregarDadosDaAPI = async () => {
             try {
@@ -172,6 +179,20 @@ createApp({
         const nomesUnicos = computed(() =>
             [...new Set(statsDB.value.filter(s => s?.jogador).map(s => s.jogador))].sort());
 
+        const ultimaDataAtualizacao = computed(() => {
+            if (!partidasDB.value || partidasDB.value.length === 0) return 'Sem rodadas';
+
+            let partidasOrdenadas = [...partidasDB.value].sort((a, b) => (b?.id || 0) - (a?.id || 0));
+            let ultimaPartida = partidasOrdenadas[0];
+            if (!ultimaPartida || !ultimaPartida.data) return 'Data não disponível';
+
+            let partesData = String(ultimaPartida.data).substring(0, 10).split('_');
+            if (partesData.length === 3) {
+                return `${partesData[2]}/${partesData[1]}/${partesData[0]}`;
+            }
+            return ultimaPartida.data;
+        });
+
         const salvarRodada = async () => {
             let arrayJogadores = [];
             form.value.dadosBrutos.split('\n').forEach(linha => {
@@ -240,6 +261,9 @@ createApp({
             form,
             jogadorSelecionado,
             tableStates,
+            darkMode,
+            mostrarAdmin,
+            ultimaDataAtualizacao,
             nomesUnicos,
             dadosDoJogador,
             rankingPaginado,
@@ -247,6 +271,7 @@ createApp({
             entrosamentosPaginado,
             histGeralPaginado,
             historicoGeralPaginado: histGeralPaginado,
+            alternarTema,
             ordenar,
             mudarPagina,
             totalPages,

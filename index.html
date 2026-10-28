@@ -7,12 +7,26 @@
     <link rel="stylesheet" href="style.css">
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script> <!-- Framework Vue.js -->
 </head>
-<body>
+<body :class="{ 'dark-mode': darkMode }">
 
     <div id="app" class="container">
+
+        <div class="topo-sistema">
+            <span> Atualizado em: <strong>{{ ultimaDataAtualizacao }}</strong></span>
+            <button class="btn-tema" @click="alternarTema">
+                {{ darkMode ? '☀️ Modo Claro' : '🌙 Modo Escuro' }}
+            </button>
+        </div>
+
         <h1> Estatísticas do Futebol de Segunda</h1>
 
-        <div class="painel-admin">      <!-- Painel admin cadastro de nova rodada -->
+        <div ckass="admin-toggle-container">
+            <button class="btn-toggle-admin" @click="mostrarAdmin = !mostrarAdmin">
+                {{ mostrarAdmin ? '🔼 Ocultar Painel de Cadastro' : '➕ Cadastrar / Gerenciar Rodada' }}
+            </button>
+        </div>
+
+        <div class="painel-admin" v-if="mostrarAdmin">      <!-- Painel admin cadastro de nova rodada -->
             <h2>{{ form.id ? '✏️ Editar Rodada #' + form.id: '📝 Cadastrar Rodada'}}</h2>
             <form @submit.prevent="salvarRodada">
 
@@ -45,7 +59,7 @@
                 </div>
 
                 <div class="form-grupo senha-grupo">
-                    <label> Senha Admin:</label>
+                    <label>🔑 Senha Admin:</label>
                     <input type="password" v-model="form.senha" placeholder="Obrigatório para salvar" required>
                 </div>
 
