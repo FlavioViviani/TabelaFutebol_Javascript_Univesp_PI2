@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="style.css">
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script> <!-- Framework Vue.js -->
 </head>
-<body :class="{ 'dark-mode': darkMode }">
+<body>
 
     <div id="app" class="container">
 
@@ -20,7 +20,7 @@
 
         <h1> Estatísticas do Futebol de Segunda</h1>
 
-        <div ckass="admin-toggle-container">
+        <div class="admin-toggle-container">
             <button class="btn-toggle-admin" @click="mostrarAdmin = !mostrarAdmin">
                 {{ mostrarAdmin ? '🔼 Ocultar Painel de Cadastro' : '➕ Cadastrar / Gerenciar Rodada' }}
             </button>

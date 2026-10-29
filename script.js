@@ -9,7 +9,7 @@ createApp({
         const darkMode = ref(false);
         const mostrarAdmin = ref(false);
 
-        const urlAPI = 'https://api-futebol-segunda-univesp.onrender.com';
+        const urlAPI = 'https://api-futebol-segunda-univesp.onrender.com/api';
 
         const form=ref({
             id: null,
@@ -31,6 +31,11 @@ createApp({
 
         const alternarTema = () => {
             darkMode.value = !darkMode.value;
+            if (darkMode.value) {
+                document.documentElement.classList.add('dark-mode');
+            } else {
+                document.documentElement.classList.remove('dark-mode');
+            }
         };
 
         const carregarDadosDaAPI = async () => {
@@ -185,12 +190,15 @@ createApp({
             let partidasOrdenadas = [...partidasDB.value].sort((a, b) => (b?.id || 0) - (a?.id || 0));
             let ultimaPartida = partidasOrdenadas[0];
             if (!ultimaPartida || !ultimaPartida.data) return 'Data não disponível';
-
-            let partesData = String(ultimaPartida.data).substring(0, 10).split('_');
-            if (partesData.length === 3) {
-                return `${partesData[2]}/${partesData[1]}/${partesData[0]}`;
+            
+            let dataString = String(ultimaPartida.data);
+            if (dataString.length >= 10) {
+                let ano = dataString.substring(0, 4);
+                let mes = dataString.substring(5, 7);
+                let dia = dataString.substring(8, 10);
+                return `${dia}/${mes}/${ano}`;
             }
-            return ultimaPartida.data;
+            return dataString;
         });
 
         const salvarRodada = async () => {

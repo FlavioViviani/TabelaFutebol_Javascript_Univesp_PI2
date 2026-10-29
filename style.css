@@ -1,6 +1,10 @@
 /* Estilo da tabela */
 
 body {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100vh;
     font-family: Arial, sans-serif;
     background-color: #f4f4f9;
     color: #333;
@@ -9,11 +13,14 @@ body {
 }
 
 .container {
+    width: 100%;
     max-width: 900px;
-    margin: 0 auto;
+    overflow-x: hidden;
+    margin: 20px auto;
     background-color: white;
     padding: 20px;
     border-radius: 8px;
+    box-sizing: border-box;
     box-shadow: 0 4px 8px rgba(0,0,0,0.1);
 }
 
@@ -24,8 +31,16 @@ h1 {
 
 table {
     width: 100%;
-    border-collapse: collapse; /* Tira os espaços duplos entre as bordas */
-    margin-top: 20px;
+    border-collapse: collapse;
+    margin-bottom: 15px;
+}
+
+@media (max-width: 768px) {
+    table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
 }
 
 th, td {
@@ -52,9 +67,12 @@ tr:hover {
 /* Estilo do Formulário */
 
 .painel-admin {
+    width: 100%;
+    box-sizing: border-box;
     background-color: #ffffff;
     border: 2px solid #e0e0e0;
-    padding: 20px;
+    padding: 15px;
+    overflow-x: hidden;
     border-radius: 8px;
     margin-bottom: 30px;
 }
@@ -67,12 +85,15 @@ tr:hover {
 
 .form-linha {
     display: flex;
-    gap: 20px;
+    flex-wrap: wrap;
+    gap: 10px;
     margin-bottom: 15px;
 }
 
 .form-grupo {
     display: flex;
+    min-width: 200px;
+    box-sizing: border-box;
     flex-direction: column;
     flex: 1;
     margin-bottom: 15px;
@@ -89,6 +110,8 @@ tr:hover {
 }
 
 input, select, textarea {
+    max-width: 100%;
+    box-sizing: border-box;
     padding: 10px;
     border: 1px solid #ccc;
     border-radius: 4px;
@@ -156,58 +179,58 @@ th:hover {
 .senha-grupo input {border: 2px solid #ef4444;}
 
 /* Modo Escuro */
-body.dark-mode {
+html.dark-mode {
     background-color: #121212 !important;
     color: #e0e0e0 !important;
 }
 
-body.dark-mode .container {
+html.dark-mode .container {
     background-color: #121212 !important;
     color: #e0e0e0 !important;
 }
 
-body.dark-mode h1,
-body.dark-mode h2,
-body.dark-mode h3,
-body.dark-mode label,
-body.dark-mode span,
-body.dark-mode small {
+html.dark-mode h1,
+html.dark-mode h2,
+html.dark-mode h3,
+html.dark-mode label,
+html.dark-mode span,
+html.dark-mode small {
     color: #ffffff !important;
 }
 
-body.dark-mode table {
+html.dark-mode table {
     background-color: #1e1e1e !important;
     color: #e0e0e0 !important;
 }
 
-body.dark-mode th {
+html.dark-mode th {
     background-color: #2c2c2c !important;
     color: #ffffff !important;
     border-color: #444 !important;
 }
 
-body.dark-mode td {
+html.dark-mode td {
     border-color: #333 !important;
 }
 
-body.dark-mode tr:nth-child(even) {
+html.dark-mode tr:nth-child(even) {
     background-color: #1a1a1a !important;
 }
 
-body.dark-mode tr:hover {
+html.dark-mode tr:hover {
     background-color: #252525 !important;
 }
 
-body.dark-mode input,
-body.dark-mode select,
-body.dark-mode textarea {
+html.dark-mode input,
+html.dark-mode select,
+html.dark-mode textarea {
     background-color: #2c2c2c !important;
     color: #ffffff !important;
     border: 1px solid #444 !important;
 }
 
-body.dark-mode .painel-admin,
-body.dark-mode .painel-detalhes {
+html.dark-mode .painel-admin,
+html.dark-mode .painel-detalhes {
     background-color: #1e1e1e !important;
     border: 1px solid #333 !important;
 }
@@ -222,7 +245,7 @@ body.dark-mode .painel-detalhes {
     color: #666;
 }
 
-body.dark-mode .topo-sistema {
+html.dark-mode .topo-sistema {
     color: #aaa;
 }
 
@@ -236,7 +259,7 @@ body.dark-mode .topo-sistema {
     background-color: #f9f9f9;
 }
 
-body.dark-mode .btn-tema {
+html.dark-mode .btn-tema {
     background-color: #2c2c2c !important;
     color: #fff !important;
     border-color: #444 !important;
