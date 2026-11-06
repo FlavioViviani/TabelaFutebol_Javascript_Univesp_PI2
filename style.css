@@ -284,3 +284,22 @@ html.dark-mode .btn-tema {
 .btn-toggle-admin:hover {
     background-color: #34495e;
 }
+
+.aviso-servidor {
+    background-color: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeeba;
+    padding: 12px 15px;
+    border-radius: 6px;
+    text-align: center;
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+html.dark-mode .aviso-servidor {
+    background-color: #2c2512;
+    color: #ffda6a;
+    border: 1px solid #5a4810;
+}

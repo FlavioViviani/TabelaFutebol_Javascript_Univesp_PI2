@@ -11,6 +11,18 @@ createApp({
 
         const urlAPI = 'https://api-futebol-segunda-univesp.onrender.com/api';
 
+        const carregandoServidor = ref(true);
+
+        const acordarServidor = async () => {
+            try {
+                await fetch('https://api-futebol-segunda-univesp.onrender.com/api/partidas');
+            } catch (erro) {
+                console.log("Servidor acordando...", erro);
+            } finally {
+                carregandoServidor.value = false;
+            }
+        };
+
         const form=ref({
             id: null,
             data: new Date().toISOString().split('T')[0],
@@ -51,7 +63,8 @@ createApp({
             }
         };
 
-        onMounted(() => {
+        onMounted(async () => {
+            await acordarServidor();
             carregarDadosDaAPI();
         });
 
@@ -270,6 +283,8 @@ createApp({
             jogadorSelecionado,
             tableStates,
             darkMode,
+            carregandoServidor,
+            acordarServidor,
             mostrarAdmin,
             ultimaDataAtualizacao,
             nomesUnicos,

@@ -20,6 +20,10 @@
 
         <h1> Estatísticas do Futebol de Segunda</h1>
 
+        <div v-if="carregandoServidor" class="aviso-servidor">
+            ...Acordando o servidor na nuvem (primeiro acesso pode levar até 30 segundos)...
+        </div>
+
         <div class="admin-toggle-container">
             <button class="btn-toggle-admin" @click="mostrarAdmin = !mostrarAdmin">
                 {{ mostrarAdmin ? '🔼 Ocultar Painel de Cadastro' : '➕ Cadastrar / Gerenciar Rodada' }}
