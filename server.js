@@ -1,9 +1,17 @@
+/*======================================================================
+ * FUTEBOL DE SEGUNDA - SERVIDOR E API (NODE.JS / EXPRESS / POSTGRESQL)
+ * ===================================================================== */
+
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const { Pool } = require('pg');
 
 const app = express();
+
+// ====================================================================
+// 1. CONFIGURAÇÕES E MIDDLEWARES
+// ====================================================================
 app.use(cors());            // Permite requisições do frontend
 app.use(express.json());    // Permite receber dados em JSON
 
@@ -15,6 +23,11 @@ const pool = new Pool({
 
 const SENHA_MESTRA = process.env.ADMIN_SENHA || '1234';
 
+// ====================================================================
+// 2. ROTAS DE CONSULTA (GET)
+// ====================================================================
+
+// Retorna todas as partidas cadastradas ordenadas por ID
 app.get('/api/partidas', async (req, res) => {
     try {
         const result = await pool.query('SELECT * FROM partidas ORDER BY id ASC');
@@ -24,6 +37,7 @@ app.get('/api/partidas', async (req, res) => {
     }
 });
 
+// Retornaa todas as estatísticasa individuais dos jogadores
 app.get('/api/stats', async (req, res) => {
     try {
         const result = await pool.query('SELECT * FROM stats_jogadores');
@@ -33,10 +47,18 @@ app.get('/api/stats', async (req, res) => {
     }
 });
 
+// ====================================================================
+// 3. ROTAS de MODIFICAÇÃO
+// ====================================================================
+
+// Salva ou atualiza uma rodada
 app.post('/api/rodadas', async (req, res) => {
     const { id, data, campeao, pontos_azul, pontos_vermelho, pontos_preto, jogadores, senha } = req.body;
     
-    if (senha !== SENHA_MESTRA) return res.status(401).jsonn({ erro: 'Senha de administrador inválida.'});
+    // Validação de senha
+    if (senha !== SENHA_MESTRA) {
+        return res.status(401).json({ erro: 'Senha de administrador inválida.' });
+    }
 
     try {
         await pool.query('BEGIN');
@@ -66,23 +88,28 @@ app.post('/api/rodadas', async (req, res) => {
         }
 
         await pool.query('COMMIT');
-
         res.json({ mensagem: 'Rodada salva com sucesso!', partida_id: partidaId});
+
     } catch (err) {
         await pool.query('ROLLBACK');
         res.status(500).json({ erro: err.message });
     }
 });
 
+// Deleta uma rodada
 app.delete('/api/rodadas/:id', async (req, res) => {
     const {senha } = req.body;
-    if (senha !== SENHA_MESTRA) return res.status(401).json({ erro: 'Senha de administrador inválida.' });
+
+    if (senha !== SENHA_MESTRA) {
+        return res.status(401).json({ erro: 'Senha de administrador inválida.' });
+    }
 
     try {
         await pool.query('BEGIN');
         await pool.query('DELETE FROM stats_jogadores WHERE partida_id=$1', [req.params.id]);
         await pool.query('DELETE FROM partidas WHERE id=$1', [req.params.id]);
         await pool.query('COMMIT');
+
         res.json({ mensagem: 'Rodada excluída com sucecsso.' });
     } catch (err) {
         await pool.query('ROLLBACK');
@@ -90,7 +117,10 @@ app.delete('/api/rodadas/:id', async (req, res) => {
     }
 });
 
-const PORT = 3000;
+// ====================================================================
+// 4. INICIALIZAÇÃO DO SERVIDOR
+// ====================================================================
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`API rodando corretamente na porta ${PORT}`);
 });

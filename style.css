@@ -1,5 +1,10 @@
-/* Estilo da tabela */
+ /** =========================================================================
+ * FUTEBOL DE SEGUNDA
+ * =========================================================================== */
 
+ /** =========================================================================
+ * 1. LAYOUT GERAL, BASE E RESET
+ * =========================================================================== */
 body {
     display: flex;
     justify-content: center;
@@ -29,42 +34,67 @@ h1 {
     color: #2c3e50;
 }
 
-table {
-    width: 100%;
-    border-collapse: collapse;
+h2, h3 {
+    color: #2c3e50;
+}
+
+
+ /** =========================================================================
+ * 2. TOPO DO SISTEMA
+ * =========================================================================== */
+.topo-sistema {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     margin-bottom: 15px;
+    font-size: 0.9rem;
+    color: #666;
 }
 
-@media (max-width: 768px) {
-    table {
-        display: block;
-        overflow-x: auto;
-        white-space: nowrap;
-    }
-}
-
-th, td {
-    padding: 12px;
-    text-align: center;
-    border-bottom: 1px solid #ddd;
-}
-
-th {
-    background-color: #2c3e50;
-    color: white;
-}
-
-/* Efeito zebra nas linhas */
-tr:nth-child(even) {
+.btn-tema {
+    background: none;
+    border: 1px solid #ccc;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
     background-color: #f9f9f9;
 }
 
-/* Efeito ao passar o mouse em cima de uma linha */
-tr:hover {
-    background-color: #f1f1f1;
+.aviso-servidor {
+    background-color: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeeba;
+    padding: 12px 15px;
+    border-radius: 6px;
+    text-align: center;
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
-/* Estilo do Formulário */
+ /** =========================================================================
+ * 3. PAINEL ADMIN E FORMULÁRIOS
+ * =========================================================================== */
+ .admin-toggle-container {
+    margin-bottom: 20px;
+}
+
+.btn-toggle-admin {
+    background-color: #2c3e50;
+    color: white;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 0.95rem;
+}
+
+.btn-toggle-admin:hover {
+    background-color: #34495e;
+}
 
 .painel-admin {
     width: 100%;
@@ -119,6 +149,10 @@ input, select, textarea {
     font-family: inherit;
 }
 
+.senha-grupo input {
+    border: 2px solid #ef4444;
+}
+
 .btn-salvar {
     background-color: #27ae60;
     color: white;
@@ -135,13 +169,78 @@ input, select, textarea {
     background-color: #2ecc71;
 }
 
+.btn-cancelar {
+    background: #64748b;
+    color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+/** =========================================================================
+ * 4. TABELAS E PAGINAÇÃO
+ * =========================================================================== */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 15px;
+}
+
+th, td {
+    padding: 12px;
+    text-align: center;
+    border-bottom: 1px solid #ddd;
+}
+
 th {
+    background-color: #2c3e50;
+    color: white;
     cursor: pointer;
     user-select: none;
     transition: background 0.2s;
 }
+
 th:hover {
     background-color: #f1f5f9;
+}
+
+tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+tr:hover {
+    background-color: #f1f1f1;
+}
+
+.cards-metricas {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.card {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    padding: 15px;
+    border-radius: 6px;
+    flex: 1;
+    min-width: 100px;
+    text-align: center;
+}
+
+.card h3 {
+    margin: 0 0 5px 0;
+    font-size: 0.9rem;
+    color: #64748b;
+}
+
+.card p {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #0f172a;
 }
 
 .paginacao {
@@ -152,6 +251,7 @@ th:hover {
     margin-top: 15px;
     margin-bottom: 30px;
 }
+
 .paginacao button {
     padding: 6px 12px;
     background-color: #2563eb;
@@ -173,12 +273,31 @@ th:hover {
     font-weight: bold;
     margin: 0 4px;
 }
-.btn-editar {background: #eab308; color: black;}
-.btn-excluir {background: #ef4444; color: white;}
-.btn-cancelar {background: #64748b; color: white; border: none; padding: 10px; border-radius: 5px; cursor: pointer;}
-.senha-grupo input {border: 2px solid #ef4444;}
 
-/* Modo Escuro */
+.btn-editar {
+    background: #eab308;
+    color: black;
+}
+
+.btn-excluir {
+    background: #ef4444;
+    color: white;
+}
+
+/** =========================================================================
+ * 5. RESPONSIVIDADE (MOBILE)
+ * =========================================================================== */
+@media (max-width: 768px) {
+    table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+}
+
+/** =========================================================================
+ * 6. MODO ESCURO (ACESSIBILIDADE)
+ * =========================================================================== */
 html.dark-mode {
     background-color: #121212 !important;
     color: #e0e0e0 !important;
@@ -235,28 +354,8 @@ html.dark-mode .painel-detalhes {
     border: 1px solid #333 !important;
 }
 
-/* Atualização e botão tema */
-.topo-sistema {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 15px;
-    font-size: 0.9rem;
-    color: #666;
-}
-
 html.dark-mode .topo-sistema {
     color: #aaa;
-}
-
-.btn-tema {
-    background: none;
-    border: 1px solid #ccc;
-    padding: 6px 12px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 0.9rem;
-    background-color: #f9f9f9;
 }
 
 html.dark-mode .btn-tema {
@@ -265,41 +364,21 @@ html.dark-mode .btn-tema {
     border-color: #444 !important;
 }
 
-/* Menu admin */
-.admin-toggle-container {
-    margin-bottom: 20px;
-}
-
-.btn-toggle-admin {
-    background-color: #2c3e50;
-    color: white;
-    border: none;
-    padding: 10px 16px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-weight: bold;
-    font-size: 0.95rem;
-}
-
-.btn-toggle-admin:hover {
-    background-color: #34495e;
-}
-
-.aviso-servidor {
-    background-color: #fff3cd;
-    color: #856404;
-    border: 1px solid #ffeeba;
-    padding: 12px 15px;
-    border-radius: 6px;
-    text-align: center;
-    font-size: 14px;
-    font-weight: 500;
-    margin-bottom: 20px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-}
-
 html.dark-mode .aviso-servidor {
     background-color: #2c2512;
     color: #ffda6a;
     border: 1px solid #5a4810;
+}
+
+html.dark-mode .card {
+    background: #1e1e1e !important;
+    border-color: #333 !important;
+}
+
+html.dark-mode .card h3 {
+    color: #94a3b8 !important;
+}
+
+html.dark-mode .card p {
+    color: #f8fafc !important;
 }

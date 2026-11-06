@@ -1,27 +1,23 @@
+/**
+ * =================================================================================
+ * FUTEBOL DE SEGUNDA - SCRIPT PRINCIPAL
+ * =================================================================================
+ */
 const { createApp, ref, computed, onMounted } = Vue;
 
 createApp({
     setup() {
+        // =========================================================================
+        // 1. CONFIGURAÇÕES E VARIÁVEIS (Vue)
+        // =========================================================================
+        const urlAPI = 'https://api-futebol-segunda-univesp.onrender.com/api';
+
         const partidasDB = ref([]);
         const statsDB = ref([]);
         const jogadorSelecionado = ref('');
-
         const darkMode = ref(false);
         const mostrarAdmin = ref(false);
-
-        const urlAPI = 'https://api-futebol-segunda-univesp.onrender.com/api';
-
         const carregandoServidor = ref(true);
-
-        const acordarServidor = async () => {
-            try {
-                await fetch('https://api-futebol-segunda-univesp.onrender.com/api/partidas');
-            } catch (erro) {
-                console.log("Servidor acordando...", erro);
-            } finally {
-                carregandoServidor.value = false;
-            }
-        };
 
         const form=ref({
             id: null,
@@ -41,15 +37,22 @@ createApp({
             histGeral: { sortKey: 'id', sortOrder: 'desc', page: 1, limit: 5}
         });
 
-        const alternarTema = () => {
-            darkMode.value = !darkMode.value;
-            if (darkMode.value) {
-                document.documentElement.classList.add('dark-mode');
-            } else {
-                document.documentElement.classList.remove('dark-mode');
+        // =========================================================================
+        // 2. COMUNICAÇÃO COM A API (RENDER & DATABASE)
+        // ========================================================================= 
+
+        // Acordar servidor gratuíto do Render
+        const acordarServidor = async () => {
+            try {
+                await fetch(`${urlAPI}/partidas`);
+            } catch (erro) {
+                console.log("Servidor acordando...", erro);
+            } finally {
+                carregandoServidor.value = false;
             }
         };
 
+        // Carrega as partidas e estatísticas do database
         const carregarDadosDaAPI = async () => {
             try {
                 const resPartidas = await fetch(`${urlAPI}/partidas`);
@@ -63,10 +66,84 @@ createApp({
             }
         };
 
-        onMounted(async () => {
-            await acordarServidor();
-            carregarDadosDaAPI();
-        });
+        // Salva ou atualiza a rodada
+        const salvarRodada = async () => {
+            let arrayJogadores = [];
+            form.value.dadosBrutos.split('\n').forEach(linha => {
+                let partes = linha.trim().split(',').map(p => p.trim());
+                if (partes.length >= 3) {
+                    arrayJogadores.push({
+                        nome: partes[0], time: partes[1].charAt(0).toUpperCase() + partes[1].toLowerCase().slice(1),
+                        gols: parseInt(partes[2]) || 0, assistencias: partes.length >= 4 ? (parseInt(partes[3]) || 0) : 0
+                    });
+                }
+            });
+
+            if (arrayJogadores.length === 0) return alert('Nenhum jogador lido.');
+
+            const pacote = {
+                id: form.value.id, data: form.value.data, campeao: form.value.campeao,
+                pontos_azul: form.value.pontos_azul, pontos_vermelho: form.value.pontos_vermelho, pontos_preto: form.value.pontos_preto,
+                jogadores: arrayJogadores, senha: form.value.senha
+            };
+
+            try {
+                const resposta = await fetch(`${urlAPI}/rodadas`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(pacote) });
+                if (resposta.ok) {
+                    alert('Rodada salva.');
+                    cancelarEdicao();
+                    await carregarDadosDaAPI();
+                } else {
+                    const erro = await resposta.json(); alert('Erro: ' + erro.erro);
+                }
+            } catch (erro) { alert('Erro de conexão.') }
+        };
+
+        // Preenche o formulário para edição
+        const editarRodada = (partida) => {
+            form.value.id = partida?.id;
+            form.value.data = partida?.data ? String(partida.data).substring(0, 10) : '';
+            form.value.campeao = partida?.campeao;
+            form.value.pontos_azul = partida?.pontos_azul || 0;
+            form.value.pontos_vermelho = partida?.pontos_vermelho || 0;
+            form.value.pontos_preto = partida?.pontos_preto || 0;
+
+            const stats = statsDB.value.filter(s => s?.partida_id === partida?.id);
+            form.value.dadosBrutos = stats.map(s => `${s?.jogador}, ${s?.time}, ${s?.gols}, ${s?.assistencias}`).join('\n');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        };
+
+        const cancelarEdicao = () => {
+            form.value.id = null; form.value.dadosBrutos = ''; form.value.pontos_azul = 0; form.value.pontos_vermelho = 0; form.value.pontos_preto = 0;            
+        };
+
+        // Deleta a rodada
+        const deletarRodada = async (id) => {
+            if (!id) return;
+            const senha = prompt('Digite a senha do administrador para Excluir:');
+            if (!senha) return;
+            if (confirm(`Tem certeza que deseja apagar a rodada #${id} inteira?`)) {
+                try {
+                    const resposta = await fetch(`${urlAPI}/rodadas/${id}`, {
+                        method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ senha })
+                    });
+                    if (resposta.ok) { alert('Excluído.'); await carregarDadosDaAPI(); }
+                    else { const erro = await resposta.json(); alert('Erro: '+ erro.erro); }
+                } catch (e) { alert('Erro de conexão.'); }
+            }
+        };
+
+        // =========================================================================
+        // 3. UI, TEMA (ACESSIBILIDADE) E UTILITÁRIOS DE TABELA
+        // =========================================================================         
+        const alternarTema = () => {
+            darkMode.value = !darkMode.value;
+            if (darkMode.value) {
+                document.documentElement.classList.add('dark-mode');
+            } else {
+                document.documentElement.classList.remove('dark-mode');
+            }
+        };
 
         const sortData = (data, key, order) => {
             if (!data || !Array.isArray(data)) return[];
@@ -99,8 +176,23 @@ createApp({
             state.page = 1;
         };
 
-        const mudarPagina = (tabela, delta) => { tableStates.value[tabela].page += delta; };
+        const mudarPagina = (tabela, delta) => {
+            tableStates.value[tabela].page += delta; 
+        };
 
+        const totalPages = (tabela) => {
+            const map = { 
+                ranking: rankingDados.value,
+                histInd: histIndDados.value,
+                entrosamentos: entrosamentosDados.value,
+                histGeral: histGeralDados.value
+            };
+            return Math.ceil(map[tabela].length / tableStates.value[tabela].limit) || 1;
+        };
+        
+        // =========================================================================
+        // 4. LÓGICA DO PROGRAMA E ESTATÍSTICAS
+        // ========================================================================= 
         const rankingDados = computed(() => {
             let ranking = {};
             
@@ -108,9 +200,11 @@ createApp({
                 if (!stat) return;
                 let nome = stat?.jogador || 'Desconhecido';
                 if (!ranking[nome]) ranking[nome] = { nome: nome, titulos: 0, gols: 0, assistencias: 0, jogos: 0};
+
                 ranking[nome].gols += Number(stat?.gols) || 0;
                 ranking[nome].assistencias += Number(stat?.assistencias) || 0;
                 ranking[nome].jogos += 1;
+
                 let partida = partidasDB.value.find(p => p?.id === stat?.partida_id) || {};
                 let timeStat = String(stat?.time || '').toLocaleLowerCase();
                 let timeCamp = String(partida?.campeao || '').toLocaleLowerCase();
@@ -144,7 +238,10 @@ createApp({
                 let time = String(stat?.time || '').toLowerCase();
                 let campeao = String(partida?.campeao || '').toLowerCase();
 
-                return { ...stat, data_formatada: partida?.data ? String(partida.data).substring(0, 10) : 'Sem data', ganhou: (time && campeao) ? campeao === time: false};
+                return { ...stat,
+                    data_formatada: partida?.data ? String(partida.data).substring(0, 10) : 'Sem data',
+                    ganhou: (time && campeao) ? campeao === time: false
+                };
             });
         });
 
@@ -158,6 +255,7 @@ createApp({
                 let timeAtleta = String(jogoAtleta?.time || '').toLowerCase();
                 let campeao = String(partida?.campeao || '').toLowerCase();
                 let ganhou = (timeAtleta && campeao) ? campeao === timeAtleta: false;
+
                 let companheiros = statsDB.value.filter(s =>
                     s?.partida_id === jogoAtleta?.partida_id &&
                     String(s?.time || '').toLowerCase() === timeAtleta &&
@@ -173,6 +271,7 @@ createApp({
                     if (ganhou) parceiros[nomeParceiro].titulos_juntos += 1;
                 });
             });
+
             let lista = Object.values(parceiros);
             lista.sort((a, b) => {
                 if (b.titulos_juntos !== a.titulos_juntos) return b.titulos_juntos - a.titulos_juntos;
@@ -182,20 +281,23 @@ createApp({
             return lista;
         });
 
-        const histGeralDados = computed(() => partidasDB.value.map(p => ({ ...p, data: p?.data ? String(p.data).substring(0,10) : 'Sem data'})));
+        const histGeralDados = computed(() =>
+            partidasDB.value.map(p => ({ ...p, data: p?.data ? String(p.data).substring(0,10) : 'Sem data'}))
+        );
 
-        const rankingPaginado = computed(() => paginate(sortData(rankingDados.value, tableStates.value.ranking.sortKey, tableStates.value.ranking.sortOrder), tableStates.value.ranking));
-        const histIndPaginado = computed(() => paginate(sortData(histIndDados.value,tableStates.value.histInd.sortKey, tableStates.value.histInd.sortOrder), tableStates.value.histInd));
-        const entrosamentosPaginado = computed(() => paginate(sortData(entrosamentosDados.value, tableStates.value.entrosamentos.sortKey, tableStates.value.entrosamentos.sortOrder), tableStates.value.entrosamentos));
-        const histGeralPaginado = computed(() => paginate(sortData(histGeralDados.value, tableStates.value.histGeral.sortKey, tableStates.value.histGeral.sortOrder), tableStates.value.histGeral));
-
-        const totalPages = (tabela) => {
-            const map = { ranking: rankingDados.value, histInd: histIndDados.value, entrosamentos: entrosamentosDados.value, histGeral: histGeralDados.value };
-            return Math.ceil(map[tabela].length / tableStates.value[tabela].limit) || 1;
-        };
+        // Tabelas Paginadas e Ordenadas
+        const rankingPaginado = computed(() =>
+            paginate(sortData(rankingDados.value, tableStates.value.ranking.sortKey, tableStates.value.ranking.sortOrder), tableStates.value.ranking));
+        const histIndPaginado = computed(() =>
+            paginate(sortData(histIndDados.value,tableStates.value.histInd.sortKey, tableStates.value.histInd.sortOrder), tableStates.value.histInd));
+        const entrosamentosPaginado = computed(() =>
+            paginate(sortData(entrosamentosDados.value, tableStates.value.entrosamentos.sortKey, tableStates.value.entrosamentos.sortOrder), tableStates.value.entrosamentos));
+        const histGeralPaginado = computed(() =>
+            paginate(sortData(histGeralDados.value, tableStates.value.histGeral.sortKey, tableStates.value.histGeral.sortOrder), tableStates.value.histGeral));
 
         const nomesUnicos = computed(() =>
-            [...new Set(statsDB.value.filter(s => s?.jogador).map(s => s.jogador))].sort());
+            [...new Set(statsDB.value.filter(s => s?.jogador).map(s => s.jogador))].sort()
+        );
 
         const ultimaDataAtualizacao = computed(() => {
             if (!partidasDB.value || partidasDB.value.length === 0) return 'Sem rodadas';
@@ -214,70 +316,17 @@ createApp({
             return dataString;
         });
 
-        const salvarRodada = async () => {
-            let arrayJogadores = [];
-            form.value.dadosBrutos.split('\n').forEach(linha => {
-                let partes = linha.trim().split(',').map(p => p.trim());
-                if (partes.length >= 3) {
-                    arrayJogadores.push({
-                        nome: partes[0], time: partes[1].charAt(0).toUpperCase() + partes[1].toLowerCase().slice(1),
-                        gols: parseInt(partes[2]) || 0, assistencias: partes.length >= 4 ? (parseInt(partes[3]) || 0) : 0
-                    });
-                }
-            });
+        // =========================================================================
+        // 5. INICIALIZAÇÃO
+        // =========================================================================
+        onMounted(async () => {
+            await acordarServidor();
+            carregarDadosDaAPI();
+        });
 
-            if (arrayJogadores.length === 0) return alert('Nenhum jogador lido.');
-
-            const pacote = {
-                id: form.value.id, data: form.value.data, campeao: form.value.campeao,
-                pontos_azul: form.value.pontos_azul, pontos_vermelho: form.value.pontos_vermelho, pontos_preto: form.value.pontos_preto,
-                jogadores: arrayJogadores, senha: form.value.senha
-            };
-
-            try {
-                const resposta = await fetch(`${urlAPI}/rodadas`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(pacote) });
-                if (resposta.ok) {
-                    alert('Rodada salva.');
-                    cancelarEdicao();
-                    await carregarDadosDaAPI();
-                } else {
-                    const erro = await resposta.json(); alert('Erro: ' + erro.erro);
-                }
-            } catch (erro) { alert('Erro de conexão.') }
-        };
-
-        const editarRodada = (partida) => {
-            form.value.id = partida?.id;
-            form.value.data = partida?.data ? String(partida.data).substring(0, 10) : '';
-            form.value.campeao = partida?.campeao;
-            form.value.pontos_azul = partida?.pontos_azul || 0;
-            form.value.pontos_vermelho = partida?.pontos_vermelho || 0;
-            form.value.pontos_preto = partida?.pontos_preto || 0;
-
-            const stats = statsDB.value.filter(s => s?.partida_id === partida?.id);
-            form.value.dadosBrutos = stats.map(s => `${s?.jogador}, ${s?.time}, ${s?.gols}, ${s?.assistencias}`).join('\n');
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        };
-
-        const cancelarEdicao = () => {
-            form.value.id = null; form.value.dadosBrutos = ''; form.value.pontos_azul = 0; form.value.pontos_vermelho = 0; form.value.pontos_preto = 0;            
-        };
-
-        const deletarRodada = async (id) => {
-            if (!id) return;
-            const senha = prompt('Digite a senha do administrador para Excluir:');
-            if (!senha) return;
-            if (confirm(`Tem certeza que deseja apagar a rodada #${id} inteira?`)) {
-                try {
-                    const resposta = await fetch(`${urlAPI}/rodadas/${id}`, {
-                        method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ senha })
-                    });
-                    if (resposta.ok) { alert('Excluído.'); await carregarDadosDaAPI(); }
-                    else { const erro = await resposta.json(); alert('Erro: '+ erro.erro); }
-                } catch (e) { alert('Erro de conexão.'); }
-            }
-        };
-
+        // =========================================================================
+        // 5. EXPOSIÇÃO PARA O HTML (SETUP)
+        // =========================================================================
         return {
             form,
             jogadorSelecionado,
@@ -304,5 +353,4 @@ createApp({
             deletarRodada
         };
     }
-
 }).mount('#app');

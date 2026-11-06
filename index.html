@@ -5,12 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Estatísticas do Futebol de Segunda</title>
     <link rel="stylesheet" href="style.css">
-    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script> <!-- Framework Vue.js -->
+    <!-- Framework Vue.js 3 -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
 </head>
 <body>
 
     <div id="app" class="container">
 
+        <!-- ============================================================================== -->
+        <!-- 1. TOPO: ATUALIZAÇÃO E ALTERAÇÃO DE TEMA                                       -->
+        <!-- ============================================================================== -->
         <div class="topo-sistema">
             <span> Atualizado em: <strong>{{ ultimaDataAtualizacao }}</strong></span>
             <button class="btn-tema" @click="alternarTema">
@@ -20,10 +24,14 @@
 
         <h1> Estatísticas do Futebol de Segunda</h1>
 
+        <!-- Aviso de Inicialização do Render (Database)                                    -->
         <div v-if="carregandoServidor" class="aviso-servidor">
             ...Acordando o servidor na nuvem (primeiro acesso pode levar até 30 segundos)...
         </div>
 
+        <!-- ============================================================================== -->
+        <!-- 2. PAINEL ADMIN (CADASTRO/ EDIÇÃO)                                             -->
+        <!-- ============================================================================== -->
         <div class="admin-toggle-container">
             <button class="btn-toggle-admin" @click="mostrarAdmin = !mostrarAdmin">
                 {{ mostrarAdmin ? '🔼 Ocultar Painel de Cadastro' : '➕ Cadastrar / Gerenciar Rodada' }}
@@ -74,154 +82,168 @@
             </form>
         </div>
 
-    <h2>Classificação Geral</h2>        <!-- Tabela principal -->
-    <table>
-        <thead>
-            <tr>
-                <th @click="ordenar('ranking', 'posicao')">Pos</th>
-                <th @click="ordenar('ranking', 'nome')">Atleta</th>
-                <th @click="ordenar('ranking', 'titulos')">Títulos</th>
-                <th @click="ordenar('ranking', 'gols')">Gols</th>
-                <th @click="ordenar('ranking', 'assistencias')">Assistências</th>
-                <th @click="ordenar('ranking', 'jogos')">Jogos</th>
-                <th @click="ordenar('ranking', 'mpg')">M.P.G</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr v-for="jogador in rankingPaginado" :key="jogador.nome">        <!-- v-for cria linha para cada jogador -->
-                <td><strong>{{ jogador.posicao }}º</strong></td>
-                <td>{{ jogador?.nome }}</td>
-                <td>{{ jogador?.titulos }}</td>
-                <td>{{ jogador?.gols }}</td>
-                <td>{{ jogador?.assistencias }}</td>
-                <td>{{ jogador?.jogos }}</td>
-                <td>{{ jogador?.mpg }}</td>
-            </tr>
-        </tbody>
-    </table>
-    <div class="paginacao">
-        <button @click="mudarPagina('ranking', -1)" :disabled="tableStates.ranking.page === 1">Anterior</button>
-        <span>Pág {{ tableStates.ranking.page }}</span>
-        <button @click="mudarPagina('ranking', 1)" :disabled="tableStates.ranking.page >= totalPages('ranking')">Próxima</button>
-    </div>
+        <!-- ============================================================================== -->
+        <!-- 3. TABELA PRINCIPAL (CLASSIFICAÇÃO GERAL)                                      -->
+        <!-- ============================================================================== -->
 
-    <hr>
-    <div class="painel-detalhes">       <!-- Painel do jogador-->
-        <h2>Detalhes do Jogador</h2>
-        <div class="form-grupo">
-            <label>Filtrar Atleta:</label>
-            <select v-model="jogadorSelecionado">
-                <option value="">Escolha um jogador...</option>
-                <option v-for="nome in nomesUnicos" :key="nome" :value="nome">{{ nome }}</option>
-            </select>
+        <h2>Classificação Geral</h2>        <!-- Tabela principal -->
+        <table>
+            <thead>
+                <tr>
+                    <th @click="ordenar('ranking', 'posicao')">Pos</th>
+                    <th @click="ordenar('ranking', 'nome')">Atleta</th>
+                    <th @click="ordenar('ranking', 'titulos')">Títulos</th>
+                    <th @click="ordenar('ranking', 'gols')">Gols</th>
+                    <th @click="ordenar('ranking', 'assistencias')">Assistências</th>
+                    <th @click="ordenar('ranking', 'jogos')">Jogos</th>
+                    <th @click="ordenar('ranking', 'mpg')">M.P.G</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr v-for="jogador in rankingPaginado" :key="jogador.nome">        <!-- v-for cria linha para cada jogador -->
+                    <td><strong>{{ jogador.posicao }}º</strong></td>
+                    <td>{{ jogador?.nome }}</td>
+                    <td>{{ jogador?.titulos }}</td>
+                    <td>{{ jogador?.gols }}</td>
+                    <td>{{ jogador?.assistencias }}</td>
+                    <td>{{ jogador?.jogos }}</td>
+                    <td>{{ jogador?.mpg }}</td>
+                </tr>
+            </tbody>
+        </table>
+        <div class="paginacao">
+            <button @click="mudarPagina('ranking', -1)" :disabled="tableStates.ranking.page === 1">Anterior</button>
+            <span>Pág {{ tableStates.ranking.page }}</span>
+            <button @click="mudarPagina('ranking', 1)" :disabled="tableStates.ranking.page >= totalPages('ranking')">Próxima</button>
         </div>
 
-        <div v-if="jogadorSelecionado">
-            <div class="cards-metricas" v-if="dadosDoJogador">
-                <div class="card">
-                    <h3>Gols</h3>
-                    <p>{{ dadosDoJogador.gols }}</p>
-                </div>
-                <div class="card">
-                    <h3>Assistências</h3>
-                    <p>{{ dadosDoJogador.assistencias }}</p>
-                </div>
-                <div class="card">
-                    <h3>Jogos</h3>
-                    <p>{{ dadosDoJogador.jogos }}</p>
-                </div>
-                <div class="card">
-                    <h3>Títulos</h3>
-                    <p>{{ dadosDoJogador.titulos }}</p>
-                </div>
+        <hr>
+
+        <!-- ============================================================================== -->
+        <!-- 4. DETALHES DO JOGADOR                                                         -->
+        <!-- ============================================================================== -->
+        <div class="painel-detalhes">       <!-- Painel do jogador-->
+            <h2>Detalhes do Jogador</h2>
+            <div class="form-grupo">
+                <label>Filtrar Atleta:</label>
+                <select v-model="jogadorSelecionado">
+                    <option value="">Escolha um jogador...</option>
+                    <option v-for="nome in nomesUnicos" :key="nome" :value="nome">{{ nome }}</option>
+                </select>
             </div>
 
-            <h3>Histórico de Partidas</h3>
-            <table>
-                <thead>
-                    <tr>
-                        <th @click="ordenar('histInd', 'partida_id')">Partida</th>
-                        <th @click="ordenar('histInd', 'data_formatada')">Data</th>
-                        <th @click="ordenar('histInd', 'time')">Time</th>
-                        <th @click="ordenar('histInd', 'gols')">Gols</th>
-                        <th @click="ordenar('histInd', 'assistencias')">Assistências</th>
-                        <th @click="ordenar('histInd', 'ganhou')">Resultado</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr v-for="stat in histIndPaginado" :key="stat.partida_id">
-                        <td>#{{ stat?.partida_id }}</td>
-                        <td>{{ stat?.data_formatada }}</td>
-                        <td>{{ stat?.time }}</td>
-                        <td>{{ stat?.gols }}</td>
-                        <td>{{ stat?.assistencias }}</td>
-                        <td>{{ stat?.ganhou ? '🏆 Campeão' : '-' }}</td>
-                    </tr>
-                </tbody>
-            </table>
-            <div class="paginacao">
-                    <button @click="mudarPagina('histInd', -1)" :disabled="tableStates.histInd.page === 1">Anterior</button>
-                    <span>Pág {{ tableStates.histInd.page }}</span>
-                    <button @click="mudarPagina('histInd', 1)" :disabled="tableStates.histInd.page >= totalPages('histInd')">Próxima</button>
-            </div>
+            <div v-if="jogadorSelecionado">
+                <div class="cards-metricas" v-if="dadosDoJogador">
+                    <div class="card">
+                        <h3>Gols</h3>
+                        <p>{{ dadosDoJogador.gols }}</p>
+                    </div>
+                    <div class="card">
+                        <h3>Assistências</h3>
+                        <p>{{ dadosDoJogador.assistencias }}</p>
+                    </div>
+                    <div class="card">
+                        <h3>Jogos</h3>
+                        <p>{{ dadosDoJogador.jogos }}</p>
+                    </div>
+                    <div class="card">
+                        <h3>Títulos</h3>
+                        <p>{{ dadosDoJogador.titulos }}</p>
+                    </div>
+                </div>
 
-            <h3 style="margin-top: 30px;">Melhores Entrosamentos</h3>
-            <table>
-                <thead>
-                    <tr>
-                        <th @click="ordenar('entrosamentos', 'nome')">Parceiros</th>
-                        <th @click="ordenar('entrosamentos', 'jogos_juntos')">Jogos Juntos</th>
-                        <th @click="ordenar('entrosamentos', 'titulos_juntos')">Títulos Juntos</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr v-for="parceiro in entrosamentosPaginado" :key="parceiro.nome">
-                        <td>{{ parceiro?.nome }}</td>
-                        <td>{{ parceiro?.jogos_juntos }}</td>
-                        <td>{{ parceiro?.titulos_juntos }}</td>
-                    </tr>
-                </tbody>
-            </table>
-            <div class="paginacao">
-                    <button @click="mudarPagina('entrosamentos', -1)" :disabled="tableStates.entrosamentos.page === 1">Anterior</button>
-                    <span>Pág {{ tableStates.entrosamentos.page }}</span>
-                    <button @click="mudarPagina('entrosamentos', 1)" :disabled="tableStates.entrosamentos.page >= totalPages('entrosamentos')">Próxima</button>
+                <h3>Histórico de Partidas</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th @click="ordenar('histInd', 'partida_id')">Partida</th>
+                            <th @click="ordenar('histInd', 'data_formatada')">Data</th>
+                            <th @click="ordenar('histInd', 'time')">Time</th>
+                            <th @click="ordenar('histInd', 'gols')">Gols</th>
+                            <th @click="ordenar('histInd', 'assistencias')">Assistências</th>
+                            <th @click="ordenar('histInd', 'ganhou')">Resultado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="stat in histIndPaginado" :key="stat.partida_id">
+                            <td>#{{ stat?.partida_id }}</td>
+                            <td>{{ stat?.data_formatada }}</td>
+                            <td>{{ stat?.time }}</td>
+                            <td>{{ stat?.gols }}</td>
+                            <td>{{ stat?.assistencias }}</td>
+                            <td>{{ stat?.ganhou ? '🏆 Campeão' : '-' }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="paginacao">
+                        <button @click="mudarPagina('histInd', -1)" :disabled="tableStates.histInd.page === 1">Anterior</button>
+                        <span>Pág {{ tableStates.histInd.page }}</span>
+                        <button @click="mudarPagina('histInd', 1)" :disabled="tableStates.histInd.page >= totalPages('histInd')">Próxima</button>
+                </div>
+
+                <h3 style="margin-top: 30px;">Melhores Entrosamentos</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th @click="ordenar('entrosamentos', 'nome')">Parceiros</th>
+                            <th @click="ordenar('entrosamentos', 'jogos_juntos')">Jogos Juntos</th>
+                            <th @click="ordenar('entrosamentos', 'titulos_juntos')">Títulos Juntos</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="parceiro in entrosamentosPaginado" :key="parceiro.nome">
+                            <td>{{ parceiro?.nome }}</td>
+                            <td>{{ parceiro?.jogos_juntos }}</td>
+                            <td>{{ parceiro?.titulos_juntos }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="paginacao">
+                        <button @click="mudarPagina('entrosamentos', -1)" :disabled="tableStates.entrosamentos.page === 1">Anterior</button>
+                        <span>Pág {{ tableStates.entrosamentos.page }}</span>
+                        <button @click="mudarPagina('entrosamentos', 1)" :disabled="tableStates.entrosamentos.page >= totalPages('entrosamentos')">Próxima</button>
+                </div>
             </div>
         </div>
-    </div>
 
-    <hr>
-    <h2>Histórico Geral de Partidas</h2>
-    <table>
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Data</th>
-                <th>Time Campeão</th>
-                <th>Placar (A-V-P)</th>
-                <th>Ações</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr v-for="partida in historicoGeralPaginado" :key="partida.id">
-                <td>#{{ partida?.id }}</td>
-                <td>{{ partida?.data }}</td>
-                <td><strong>{{ partida?.campeao }}</strong></td>
-                <td>{{ partida?.pontos_azul }} - {{ partida?.pontos_vermelho }} - {{ partida?.pontos_preto }}</td>
-                <td>
-                    <button class="acoes-btn btn-editar" @click ="editarRodada(partida)">✏️ Editar</button>
-                    <button class="acoes-btn btn-excluir" @click ="deletarRodada(partida.id)">🗑️ Excluir</button>
-                </td>
-            </tr>
-        </tbody>
-    </table>
-    <div class="paginacao">
-            <button @click="mudarPagina('histGeral', -1)" :disabled="tableStates.histGeral.page === 1">Anterior</button>
-            <span>Pág {{ tableStates.histGeral.page }}</span>
-            <button @click="mudarPagina('histGeral', 1)" :disabled="tableStates.histGeral.page >= totalPages('histGeral')">Próxima</button>
-    </div>
+        <hr>
+
+        <!-- ============================================================================== -->
+        <!-- 5. HISTÓRICO GERAL DE PARTIDAS E GERENCIAMENTO                                 -->
+        <!-- ============================================================================== -->
+        <h2>Histórico Geral de Partidas</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Data</th>
+                    <th>Time Campeão</th>
+                    <th>Placar (A-V-P)</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr v-for="partida in historicoGeralPaginado" :key="partida.id">
+                    <td>#{{ partida?.id }}</td>
+                    <td>{{ partida?.data }}</td>
+                    <td><strong>{{ partida?.campeao }}</strong></td>
+                    <td>{{ partida?.pontos_azul }} - {{ partida?.pontos_vermelho }} - {{ partida?.pontos_preto }}</td>
+                    <td>
+                        <button class="acoes-btn btn-editar" @click ="editarRodada(partida)">✏️ Editar</button>
+                        <button class="acoes-btn btn-excluir" @click ="deletarRodada(partida.id)">🗑️ Excluir</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <div class="paginacao">
+                <button @click="mudarPagina('histGeral', -1)" :disabled="tableStates.histGeral.page === 1">Anterior</button>
+                <span>Pág {{ tableStates.histGeral.page }}</span>
+                <button @click="mudarPagina('histGeral', 1)" :disabled="tableStates.histGeral.page >= totalPages('histGeral')">Próxima</button>
+        </div>
+
     </div>
     
+    <!-- Script principal do Frontend -->
     <script src="script.js"></script>
 </body>
 </html>
